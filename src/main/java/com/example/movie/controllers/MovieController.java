@@ -1,5 +1,6 @@
 package com.example.movie.controllers;
 
+import com.example.movie.dtos.MovieResponse;
 import com.example.movie.models.Movie;
 import com.example.movie.services.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -17,8 +17,17 @@ public class MovieController {
     private MovieService movieService;
 
     @GetMapping
-    public List<Movie> getAllMovies() {
-        return movieService.getAllMovies();
+    public ResponseEntity<MovieResponse> getAllMovies(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+
+        MovieResponse movieResponse = movieService.getAllMovies(token);
+
+        if (movieResponse.getStatus() == 200) {
+            return ResponseEntity.status(HttpStatus.OK).body(movieResponse);
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(movieResponse);
+        }
     }
 
     @GetMapping("/{id}")
@@ -28,9 +37,15 @@ public class MovieController {
     }
 
     @PostMapping
-    public ResponseEntity<Movie> createMovie(@RequestBody Movie movie) {
-        Movie createdMovie = movieService.createMovie(movie);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdMovie);
+    public ResponseEntity<?> createMovie(@RequestHeader("Authorization") String authHeader, @RequestBody Movie movie) {
+        String token = authHeader.substring(7);
+
+        try {
+            Movie createdMovie = movieService.createMovie(token, movie);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdMovie);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     @PatchMapping("/{id}")
