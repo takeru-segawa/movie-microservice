@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class BaseResponse<T> {
     private Integer status;
     private String message;
+    private long totalElements;
+    private int totalPages;
 
     private T data;
 
@@ -32,5 +34,21 @@ public class BaseResponse<T> {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public long getTotalElements() {
+        return totalElements;
+    }
+
+    public void setTotalElements(long totalElements) {
+        this.totalElements = totalElements;
+    }
+
+    public int getTotalPages() {
+        return totalPages;
+    }
+
+    public void setTotalPages(int totalPages) {
+        this.totalPages = totalPages;
     }
 }

@@ -8,12 +8,16 @@ import com.example.movie.dtos.UserResponse;
 import com.example.movie.models.Movie;
 import com.example.movie.repositories.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MovieService {
@@ -42,37 +46,108 @@ public class MovieService {
         }
     }
 
-    public MovieResponse getAllMovies(String token) {
+//    public MovieResponse getAllMovies(String token) {
+//        try {
+//            String username = jwtUtil.decodeToken(token);
+//
+//            UserResponse user = userClient.getUser(token, username);
+//
+//            MovieResponse movieResponse = new MovieResponse();
+//
+//            List<Movie> movies = movieRepository.findAllByOwner(user.getData().getId());
+//            List<MovieDTO> movieResponseDTOS = new ArrayList<>();
+//
+//            for (Movie movie : movies) {
+//                MovieDTO movieResponseDTO = new MovieDTO();
+//                movieResponseDTO.setId(movie.getId());
+//                movieResponseDTO.setMovieId(movie.getMovieId());
+//                movieResponseDTO.setTitle(movie.getTitle());
+//                movieResponseDTO.setGenres(movie.getGenres());
+//                movieResponseDTO.setOwner(username);
+//
+//                movieResponseDTOS.add(movieResponseDTO);
+//            }
+//
+//            movieResponse.setData(movieResponseDTOS);
+//
+//            movieResponse.setStatus(user.getStatus());
+//            movieResponse.setMessage("Success");
+//            return movieResponse;
+//        } catch (Exception e) {
+//            MovieResponse movieResponse = new MovieResponse();
+//            movieResponse.setStatus(401);
+//            movieResponse.setMessage("Unauthorized");
+//            return movieResponse;
+//        }
+//    }
+
+    public MovieResponse getAllMovies(String token, int page, int size, String sortBy, String sortDirection, String search) {
         try {
             String username = jwtUtil.decodeToken(token);
-
-            UserResponse user = userClient.getUser(token, username);
+            UserResponse user = userClient.getUser (token, username);
 
             MovieResponse movieResponse = new MovieResponse();
+            List<Movie> movies;
+            Page<Movie> moviePage;
 
-            List<Movie> movies = movieRepository.findAllByOwner(user.getData().getId());
-            List<MovieDTO> movieResponseDTOS = new ArrayList<>();
-
-            for (Movie movie : movies) {
-                MovieDTO movieResponseDTO = new MovieDTO();
-                movieResponseDTO.setId(movie.getId());
-                movieResponseDTO.setMovieId(movie.getMovieId());
-                movieResponseDTO.setTitle(movie.getTitle());
-                movieResponseDTO.setGenres(movie.getGenres());
-                movieResponseDTO.setOwner(username);
-
-                movieResponseDTOS.add(movieResponseDTO);
+            Sort sort;
+            if ("desc".equalsIgnoreCase(sortDirection)) {
+                sort = Sort.by(sortBy).descending();
+            } else {
+                sort = Sort.by(sortBy).ascending();
             }
 
-            movieResponse.setData(movieResponseDTOS);
+            if ("ROLE_ADMIN".equals(user.getData().getRole())) {
+                moviePage = movieRepository.findAllByTitleContaining(search, PageRequest.of(page, size, sort));
+            } else if ("ROLE_USER".equals(user.getData().getRole())) {
+                moviePage = movieRepository.findAllByOwnerAndTitleContaining(user.getData().getId(), search, PageRequest.of(page, size, sort));
+            } else {
+                movieResponse.setStatus(403);
+                movieResponse.setMessage("Forbidden");
+                movieResponse.setTotalElements(0);
+                movieResponse.setTotalPages(0);
+                return movieResponse;
+            }
 
-            movieResponse.setStatus(user.getStatus());
+            long totalElements = moviePage.getTotalElements();
+            int totalPages = moviePage.getTotalPages();
+
+//            List<MovieDTO> movieResponseDTOS = new ArrayList<>();
+//            for (Movie movie : movies) {
+//                MovieDTO movieResponseDTO = new MovieDTO();
+//                movieResponseDTO.setId(movie.getId());
+//                movieResponseDTO.setMovieId(movie.getMovieId());
+//                movieResponseDTO.setTitle(movie.getTitle());
+//                movieResponseDTO.setGenres(movie.getGenres());
+//                movieResponseDTO.setOwner(movie.getOwner());
+//
+//                movieResponseDTOS.add(movieResponseDTO);
+//            }
+
+            List<MovieDTO> movieResponseDTOS = moviePage.getContent().stream()
+                    .map(movie -> {
+                        MovieDTO movieResponseDTO = new MovieDTO();
+                        movieResponseDTO.setId(movie.getId());
+                        movieResponseDTO.setMovieId(movie.getMovieId());
+                        movieResponseDTO.setTitle(movie.getTitle());
+                        movieResponseDTO.setGenres(movie.getGenres());
+                        movieResponseDTO.setOwner(movie.getOwner());
+                        return movieResponseDTO;
+                    })
+                    .collect(Collectors.toList());
+
+            movieResponse.setData(movieResponseDTOS);
+            movieResponse.setStatus(200);
             movieResponse.setMessage("Success");
+            movieResponse.setTotalElements(totalElements);
+            movieResponse.setTotalPages(totalPages);
             return movieResponse;
         } catch (Exception e) {
             MovieResponse movieResponse = new MovieResponse();
             movieResponse.setStatus(401);
             movieResponse.setMessage("Unauthorized");
+            movieResponse.setTotalElements(0);
+            movieResponse.setTotalPages(0);
             return movieResponse;
         }
     }

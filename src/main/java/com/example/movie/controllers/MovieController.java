@@ -12,15 +12,21 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/movies")
+@CrossOrigin(origins = "http://localhost:4200")
 public class MovieController {
     @Autowired
     private MovieService movieService;
 
     @GetMapping
-    public ResponseEntity<MovieResponse> getAllMovies(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<MovieResponse> getAllMovies(@RequestHeader("Authorization") String authHeader,
+                                                      @RequestParam(defaultValue = "0") int page,
+                                                      @RequestParam(defaultValue = "10") int size,
+                                                      @RequestParam(defaultValue = "title") String sortBy,
+                                                      @RequestParam(defaultValue = "asc") String sortDirection,
+                                                      @RequestParam(defaultValue = "") String search) {
         String token = authHeader.substring(7);
 
-        MovieResponse movieResponse = movieService.getAllMovies(token);
+        MovieResponse movieResponse = movieService.getAllMovies(token, page, size, sortBy, sortDirection, search);
 
         if (movieResponse.getStatus() == 200) {
             return ResponseEntity.status(HttpStatus.OK).body(movieResponse);
