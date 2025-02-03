@@ -213,4 +213,8 @@ public class MovieService {
     public void deleteMovie(String id) {
         movieRepository.deleteById(id);
     }
+
+    public void saveMovie(Movie movie) {
+        movieRepository.save(movie);
+    }
 }
