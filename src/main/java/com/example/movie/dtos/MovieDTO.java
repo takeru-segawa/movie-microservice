@@ -7,6 +7,9 @@ public class MovieDTO {
     private String genres;
     private String owner;
 
+    public MovieDTO() {
+    }
+
     public String getId() {
         return id;
     }
@@ -45,5 +48,16 @@ public class MovieDTO {
 
     public void setOwner(String owner) {
         this.owner = owner;
+    }
+
+    @Override
+    public String toString() {
+        return "MovieDTO{" +
+                "id='" + id + '\'' +
+                ", movieId=" + movieId +
+                ", title='" + title + '\'' +
+                ", genres='" + genres + '\'' +
+                ", owner='" + owner + '\'' +
+                '}';
     }
 }
