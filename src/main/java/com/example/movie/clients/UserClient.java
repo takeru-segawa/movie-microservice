@@ -12,7 +12,9 @@ public class UserClient {
     private WebClient.Builder webClientBuilder;
 
     @Value("${api.user.uri}")
-    private String userApiUri;
+    private String host;
+
+    private String userApiUri = host + "/users/{username}";
 
     public UserResponse getUser(String token, String username) {
         UserResponse user = webClientBuilder.build()

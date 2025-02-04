@@ -8,6 +8,7 @@ import com.example.movie.dtos.UserResponse;
 import com.example.movie.models.Movie;
 import com.example.movie.repositories.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +22,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class MovieService {
+    @Value("${api.user.uri}")
+    private static String host;
+
     public static final String ROLE_ADMIN = "ROLE_ADMIN";
     public static final String ROLE_USER = "ROLE_USER";
 
@@ -30,7 +34,7 @@ public class MovieService {
     public static final String MESSAGE_SUCCESS = "Success";
     public static final String MESSAGE_UNAUTHORIZED = "Unauthorized";
 
-    public static final String USER_API_URI = "http://localhost:8080/api/v1/users/{username}";
+    public static final String USER_API_URI = host + "/users/{username}";
 
     public static final String HEADER_AUTHORIZATION = "Authorization";
 
@@ -61,41 +65,6 @@ public class MovieService {
             return false;
         }
     }
-
-//    public MovieResponse getAllMovies(String token) {
-//        try {
-//            String username = jwtUtil.decodeToken(token);
-//
-//            UserResponse user = userClient.getUser(token, username);
-//
-//            MovieResponse movieResponse = new MovieResponse();
-//
-//            List<Movie> movies = movieRepository.findAllByOwner(user.getData().getId());
-//            List<MovieDTO> movieResponseDTOS = new ArrayList<>();
-//
-//            for (Movie movie : movies) {
-//                MovieDTO movieResponseDTO = new MovieDTO();
-//                movieResponseDTO.setId(movie.getId());
-//                movieResponseDTO.setMovieId(movie.getMovieId());
-//                movieResponseDTO.setTitle(movie.getTitle());
-//                movieResponseDTO.setGenres(movie.getGenres());
-//                movieResponseDTO.setOwner(username);
-//
-//                movieResponseDTOS.add(movieResponseDTO);
-//            }
-//
-//            movieResponse.setData(movieResponseDTOS);
-//
-//            movieResponse.setStatus(user.getStatus());
-//            movieResponse.setMessage("Success");
-//            return movieResponse;
-//        } catch (Exception e) {
-//            MovieResponse movieResponse = new MovieResponse();
-//            movieResponse.setStatus(401);
-//            movieResponse.setMessage("Unauthorized");
-//            return movieResponse;
-//        }
-//    }
 
     public MovieResponse getAllMovies(String token, int page, int size, String sortBy, String sortDirection, String search) {
         try {

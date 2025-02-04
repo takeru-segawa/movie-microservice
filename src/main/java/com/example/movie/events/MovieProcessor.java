@@ -18,10 +18,6 @@ public class MovieProcessor {
 
     @Bean
     public Function<Message<MovieDTO>, String> processMovies() {
-//        return message -> {
-//            return movieService.processMovieMessage(message);
-//        };
-
         return message -> {
             MovieDTO movieDTO = message.getPayload();
             System.out.println("Received movie: " + movieDTO.getTitle());
