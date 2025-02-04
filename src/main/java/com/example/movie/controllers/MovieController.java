@@ -3,7 +3,6 @@ package com.example.movie.controllers;
 import com.example.movie.dtos.MovieDTO;
 import com.example.movie.dtos.MovieResponse;
 import com.example.movie.models.Movie;
-import com.example.movie.services.MovieEventProducer;
 import com.example.movie.services.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,20 +20,10 @@ public class MovieController {
     @Autowired
     private MovieService movieService;
 
-    @Autowired
-    private MovieEventProducer eventProducer;
-
     @PostMapping("/createCloudStream")
     public void createMoviesCloudStream(@RequestBody List<MovieDTO> movies) {
         for (MovieDTO movie : movies) {
             movieService.createAMovie(movie);
-        }
-    }
-
-    @PostMapping("/create")
-    public void createMovies(@RequestBody List<MovieDTO> movies) {
-        for (MovieDTO movie : movies) {
-            eventProducer.publishMovieCreatedEvent(movie);
         }
     }
 
