@@ -21,6 +21,19 @@ import java.util.stream.Collectors;
 
 @Service
 public class MovieService {
+    public static final String ROLE_ADMIN = "ROLE_ADMIN";
+    public static final String ROLE_USER = "ROLE_USER";
+
+    public static final String SORT_DESC = "desc";
+
+    public static final String MESSAGE_FORBIDDEN = "forbidden";
+    public static final String MESSAGE_SUCCESS = "Success";
+    public static final String MESSAGE_UNAUTHORIZED = "Unauthorized";
+
+    public static final String USER_API_URI = "http://localhost:8080/api/v1/users/{username}";
+
+    public static final String HEADER_AUTHORIZATION = "Authorization";
+
     @Autowired
     private MovieRepository movieRepository;
 
@@ -94,19 +107,19 @@ public class MovieService {
             Page<Movie> moviePage;
 
             Sort sort;
-            if ("desc".equalsIgnoreCase(sortDirection)) {
+            if (SORT_DESC.equalsIgnoreCase(sortDirection)) {
                 sort = Sort.by(sortBy).descending();
             } else {
                 sort = Sort.by(sortBy).ascending();
             }
 
-            if ("ROLE_ADMIN".equals(user.getData().getRole())) {
+            if (ROLE_ADMIN.equals(user.getData().getRole())) {
                 moviePage = movieRepository.findAllByTitleContaining(search, PageRequest.of(page, size, sort));
-            } else if ("ROLE_USER".equals(user.getData().getRole())) {
+            } else if (ROLE_USER.equals(user.getData().getRole())) {
                 moviePage = movieRepository.findAllByOwnerAndTitleContaining(user.getData().getId(), search, PageRequest.of(page, size, sort));
             } else {
                 movieResponse.setStatus(403);
-                movieResponse.setMessage("Forbidden");
+                movieResponse.setMessage(MESSAGE_FORBIDDEN);
                 movieResponse.setTotalElements(0);
                 movieResponse.setTotalPages(0);
                 return movieResponse;
@@ -129,14 +142,14 @@ public class MovieService {
 
             movieResponse.setData(movieResponseDTOS);
             movieResponse.setStatus(200);
-            movieResponse.setMessage("Success");
+            movieResponse.setMessage(MESSAGE_SUCCESS);
             movieResponse.setTotalElements(totalElements);
             movieResponse.setTotalPages(totalPages);
             return movieResponse;
         } catch (Exception e) {
             MovieResponse movieResponse = new MovieResponse();
             movieResponse.setStatus(401);
-            movieResponse.setMessage("Unauthorized");
+            movieResponse.setMessage(MESSAGE_UNAUTHORIZED);
             movieResponse.setTotalElements(0);
             movieResponse.setTotalPages(0);
             return movieResponse;
@@ -162,8 +175,8 @@ public class MovieService {
         try {
             UserResponse user = webClientBuilder.build()
                     .get()
-                    .uri("http://localhost:8080/api/v1/users/{username}", username)
-                    .header("Authorization", "Bearer " + token)
+                    .uri(USER_API_URI, username)
+                    .header(HEADER_AUTHORIZATION, "Bearer " + token)
                     .retrieve()
                     .bodyToMono(UserResponse.class)
                     .block();
