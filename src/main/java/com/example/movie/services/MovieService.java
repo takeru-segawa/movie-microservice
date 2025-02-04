@@ -226,22 +226,8 @@ public class MovieService {
         movieRepository.save(movie);
     }
 
-//    public String processMovieMessage(Message<MovieDTO> message) {
-//        MovieDTO movieDTO = message.getPayload();
-//
-//        Movie movie = new Movie();
-//        movie.setTitle(movieDTO.getTitle());
-//        movie.setId(movieDTO.getId());
-//        movie.setMovieId(movieDTO.getMovieId());
-//        movie.setGenres(movieDTO.getGenres());
-//
-//        movieRepository.save(movie);
-//
-//        return "Saved: " + movie.getTitle();
-//    }
-
     public void createAMovie(MovieDTO movieDTO) {
         System.out.println("Sending movie: " + movieDTO.getTitle());
-        streamBridge.send("processMovies-out-0", movieDTO);
+        streamBridge.send("processMovies-in-0", movieDTO);
     }
 }
