@@ -5,23 +5,18 @@ import com.example.movie.config.JwtUtil;
 import com.example.movie.dtos.MovieResponse;
 import com.example.movie.dtos.MovieDTO;
 import com.example.movie.dtos.UserResponse;
-import com.example.movie.events.MovieProcessor;
 import com.example.movie.models.Movie;
 import com.example.movie.repositories.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.function.StreamBridge;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,9 +35,6 @@ public class MovieService {
 
     @Autowired
     private StreamBridge streamBridge;
-
-//    @Autowired
-//    private MovieProcessor movieProcessor;
 
     public boolean isMovieOwner(String token, String movieId) {
         try {
@@ -122,18 +114,6 @@ public class MovieService {
 
             long totalElements = moviePage.getTotalElements();
             int totalPages = moviePage.getTotalPages();
-
-//            List<MovieDTO> movieResponseDTOS = new ArrayList<>();
-//            for (Movie movie : movies) {
-//                MovieDTO movieResponseDTO = new MovieDTO();
-//                movieResponseDTO.setId(movie.getId());
-//                movieResponseDTO.setMovieId(movie.getMovieId());
-//                movieResponseDTO.setTitle(movie.getTitle());
-//                movieResponseDTO.setGenres(movie.getGenres());
-//                movieResponseDTO.setOwner(movie.getOwner());
-//
-//                movieResponseDTOS.add(movieResponseDTO);
-//            }
 
             List<MovieDTO> movieResponseDTOS = moviePage.getContent().stream()
                     .map(movie -> {

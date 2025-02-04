@@ -6,18 +6,13 @@ import com.example.movie.models.Movie;
 import com.example.movie.services.MovieEventProducer;
 import com.example.movie.services.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.function.context.FunctionRegistry;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.*;
 
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 @RestController
 @RequestMapping("/api/v1/movies")
@@ -32,8 +27,6 @@ public class MovieController {
     @PostMapping("/createCloudStream")
     public void createMoviesCloudStream(@RequestBody List<MovieDTO> movies) {
         for (MovieDTO movie : movies) {
-//            processLogs.apply(MessageBuilder.withPayload(movie).build());
-//            Message<MovieDTO> message = MessageBuilder.withPayload(movie).build();
             movieService.createAMovie(movie);
         }
     }
