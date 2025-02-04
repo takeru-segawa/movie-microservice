@@ -1,14 +1,20 @@
-package com.example.movie.dtos;
+package com.example.movie.models;
 
-public class MovieDTO {
-    private String id;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.redis.core.RedisHash;
+
+@RedisHash("movies")
+@Getter
+@Setter
+public class MovieRedis {
+    @Id
+    private String id; // Unique identifier for Redis
     private Integer movieId;
     private String title;
     private String genres;
     private String owner;
-
-    public MovieDTO() {
-    }
 
     public String getId() {
         return id;
@@ -18,20 +24,20 @@ public class MovieDTO {
         this.id = id;
     }
 
-    public Integer getMovieId() {
-        return movieId;
-    }
-
-    public void setMovieId(Integer movieId) {
-        this.movieId = movieId;
-    }
-
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public Integer getMovieId() {
+        return movieId;
+    }
+
+    public void setMovieId(Integer movieId) {
+        this.movieId = movieId;
     }
 
     public String getGenres() {
@@ -50,14 +56,4 @@ public class MovieDTO {
         this.owner = owner;
     }
 
-    @Override
-    public String toString() {
-        return "MovieDTO{" +
-                "id='" + id + '\'' +
-                ", movieId=" + movieId +
-                ", title='" + title + '\'' +
-                ", genres='" + genres + '\'' +
-                ", owner='" + owner + '\'' +
-                '}';
-    }
 }
