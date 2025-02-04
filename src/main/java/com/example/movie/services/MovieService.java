@@ -5,18 +5,23 @@ import com.example.movie.config.JwtUtil;
 import com.example.movie.dtos.MovieResponse;
 import com.example.movie.dtos.MovieDTO;
 import com.example.movie.dtos.UserResponse;
+import com.example.movie.events.MovieProcessor;
 import com.example.movie.models.Movie;
 import com.example.movie.repositories.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.function.StreamBridge;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +37,12 @@ public class MovieService {
 
     @Autowired
     private UserClient userClient;
+
+    @Autowired
+    private StreamBridge streamBridge;
+
+//    @Autowired
+//    private MovieProcessor movieProcessor;
 
     public boolean isMovieOwner(String token, String movieId) {
         try {
@@ -169,19 +180,16 @@ public class MovieService {
         String username = jwtUtil.decodeToken(token);
 
         try {
-            // Gọi API lấy userId
             UserResponse user = webClientBuilder.build()
                     .get()
                     .uri("http://localhost:8080/api/v1/users/{username}", username)
                     .header("Authorization", "Bearer " + token)
                     .retrieve()
                     .bodyToMono(UserResponse.class)
-                    .block(); // Chờ response
+                    .block();
 
-            // Set owner cho movie
             movie.setOwner(user.getData().getId());
 
-            // Lưu movie
             return movieRepository.save(movie);
         } catch (Exception e) {
             throw new RuntimeException("Error fetching user ID", e);
@@ -216,5 +224,24 @@ public class MovieService {
 
     public void saveMovie(Movie movie) {
         movieRepository.save(movie);
+    }
+
+//    public String processMovieMessage(Message<MovieDTO> message) {
+//        MovieDTO movieDTO = message.getPayload();
+//
+//        Movie movie = new Movie();
+//        movie.setTitle(movieDTO.getTitle());
+//        movie.setId(movieDTO.getId());
+//        movie.setMovieId(movieDTO.getMovieId());
+//        movie.setGenres(movieDTO.getGenres());
+//
+//        movieRepository.save(movie);
+//
+//        return "Saved: " + movie.getTitle();
+//    }
+
+    public void createAMovie(MovieDTO movieDTO) {
+        System.out.println("Sending movie: " + movieDTO.getTitle());
+        streamBridge.send("processMovies-out-0", movieDTO);
     }
 }

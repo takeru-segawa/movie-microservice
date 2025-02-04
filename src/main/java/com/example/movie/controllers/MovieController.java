@@ -29,17 +29,12 @@ public class MovieController {
     @Autowired
     private MovieEventProducer eventProducer;
 
-    @Autowired
-    private Function<String, String> enrichLogMessage;
-
-
-    @Autowired
-    private Function<Message<MovieDTO>, String> processLogs;
-
     @PostMapping("/createCloudStream")
     public void createMoviesCloudStream(@RequestBody List<MovieDTO> movies) {
         for (MovieDTO movie : movies) {
-            processLogs.apply(MessageBuilder.withPayload(movie).build());
+//            processLogs.apply(MessageBuilder.withPayload(movie).build());
+//            Message<MovieDTO> message = MessageBuilder.withPayload(movie).build();
+            movieService.createAMovie(movie);
         }
     }
 
